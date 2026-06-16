@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='date'],
+select {
+  transition: all 0.3s ease;
+}
+
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='password']:focus,
+input[type='tel']:focus,
+input[type='date']:focus,
+select:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+}
+
+button {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #faf5fc;
+}
+::-webkit-scrollbar-thumb {
+  background: #e8a0b4;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c97a94;
+}
+/* Add to index.css or component style */
+.product-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.product-card:hover {
+  transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+  box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+.floating-gold {
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+.add-to-cart-3d {
+  transition: transform 0.1s, box-shadow 0.2s;
+  transform-style: preserve-3d;
+}
+.add-to-cart-3d:active {
+  transform: translateY(3px) scale(0.97);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.add-to-cart-3d::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 70%);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.add-to-cart-3d:active::after {
+  opacity: 1;
+  transform: scale(1.5);
+  transition: opacity 0s, transform 0.3s;
+}
+.hero-emoji {
+  position: relative;
+  display: inline-block;
+}
+.hero-emoji::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  border: 2px solid gold;
+  border-radius: 50%;
+  animation: spin 10s linear infinite;
+  box-shadow: 0 0 15px rgba(212,175,55,0.5);
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.gold-ring {
+  position: relative;
+  display: inline-block;
+}
+.gold-ring::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border: 1.5px solid #d4af37;
+  border-radius: 50%;
+  animation: spinRing 6s linear infinite;
+  box-shadow: 0 0 8px rgba(212,175,55,0.4);
+}
+@keyframes spinRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.product-card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s;
+}
+.product-card-3d:hover {
+  transform: translateY(-8px);
+}
+.product-card-3d .product-image {
+  transition: transform 0.2s ease-out;
+  transform: translateZ(10px);
+}
+.product-card-3d:hover .product-image {
+  transform: translateZ(20px) scale(1.02);
+}
+.product-card-3d .btn-add {
+  transition: transform 0.2s;
+  transform: translateZ(5px);
+}
+.product-card-3d:hover .btn-add {
+  transform: translateZ(15px);
+}
+.fab-3d {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #d4af37;
+  color: #3b1e30;
+  padding: 0.9rem 1.5rem;
+  border-radius: 40px;
+  font-weight: bold;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 0 0 rgba(212,175,55,0.5);
+  animation: pulseGlow 2s infinite;
+  transition: transform 0.2s;
+  z-index: 100;
+}
+.fab-3d:hover {
+  transform: scale(1.05) translateY(-3px);
+}
+@keyframes pulseGlow {
+  0% { box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 0 0 rgba(212,175,55,0.5); }
+  70% { box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 0 12px rgba(212,175,55,0); }
+  100% { box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 0 0 rgba(212,175,55,0); }
+}
