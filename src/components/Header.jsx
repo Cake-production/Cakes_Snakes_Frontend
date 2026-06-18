@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
-import { Menu, X, ShoppingCart, User, LogOut } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, LogOut, BarChart3, Package, Home } from 'lucide-react';
 import { colors } from '../constants/theme';
 import { useAuthStore, useCartStore } from '../context/store';
 
-const Header = ({ onNavigate, userRole }) => {
+const Header = ({ onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { logout } = useAuthStore();
+  const { userRole, logout } = useAuthStore(); // changed from 'role' to 'userRole'
   const totalItems = useCartStore((state) => state.totalItems);
+
+  const isManager = userRole === 'MANAGER' || userRole === 'ADMIN';
 
   const handleLogout = () => {
     logout();
+    localStorage.removeItem('authToken');
     onNavigate('login');
+  };
+
+  const handleNav = (page) => {
+    onNavigate(page);
+    setIsMenuOpen(false);
   };
 
   return (
@@ -21,10 +29,7 @@ const Header = ({ onNavigate, userRole }) => {
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <button
-            onClick={() => {
-              onNavigate(userRole === 'manager' ? 'analytics' : 'storefront');
-              setIsMenuOpen(false);
-            }}
+            onClick={() => handleNav(isManager ? 'analytics' : 'storefront')}
             style={{ fontFamily: 'Playfair Display, serif', fontSize: '24px' }}
             className="font-bold cursor-pointer hover:opacity-80 transition"
           >
@@ -33,45 +38,30 @@ const Header = ({ onNavigate, userRole }) => {
         </div>
 
         <nav className="hidden md:flex gap-8 text-sm">
-          {userRole === 'customer' ? (
+          {isManager ? (
             <>
-              <button
-                onClick={() => onNavigate('storefront')}
-                className="opacity-80 hover:opacity-100 transition"
-              >
-                Shop
+              <button onClick={() => handleNav('analytics')} className="flex items-center gap-2 opacity-80 hover:opacity-100 transition">
+                <BarChart3 size={16} /> Analytics
               </button>
-              <button
-                onClick={() => onNavigate('cart')}
-                className="opacity-80 hover:opacity-100 transition"
-              >
-                About
+              <button onClick={() => handleNav('inventory')} className="flex items-center gap-2 opacity-80 hover:opacity-100 transition">
+                <Package size={16} /> Inventory
               </button>
             </>
           ) : (
             <>
-              <button
-                onClick={() => onNavigate('analytics')}
-                className="opacity-80 hover:opacity-100 transition"
-              >
-                Analytics
+              <button onClick={() => handleNav('storefront')} className="flex items-center gap-2 opacity-80 hover:opacity-100 transition">
+                <Home size={16} /> Shop
               </button>
-              <button
-                onClick={() => onNavigate('inventory')}
-                className="opacity-80 hover:opacity-100 transition"
-              >
-                Inventory
+              <button onClick={() => handleNav('about')} className="opacity-80 hover:opacity-100 transition">
+                About
               </button>
             </>
           )}
         </nav>
 
         <div className="flex items-center gap-6">
-          {userRole === 'customer' && (
-            <button
-              onClick={() => onNavigate('cart')}
-              className="relative hover:opacity-80 transition"
-            >
+          {!isManager && (
+            <button onClick={() => handleNav('cart')} className="relative hover:opacity-80 transition">
               <ShoppingCart size={24} />
               {totalItems > 0 && (
                 <span
@@ -83,68 +73,27 @@ const Header = ({ onNavigate, userRole }) => {
               )}
             </button>
           )}
-          <button
-            onClick={() => onNavigate('profile')}
-            className="hover:opacity-80 transition"
-          >
+          <button onClick={() => handleNav('profile')} className="hover:opacity-80 transition">
             <User size={24} />
           </button>
-          <button
-            onClick={handleLogout}
-            className="text-sm opacity-80 hover:opacity-100 transition"
-          >
+          <button onClick={handleLogout} className="hover:opacity-80 transition">
             <LogOut size={20} />
           </button>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div
-          style={{ backgroundColor: colors.darkPlum }}
-          className="md:hidden mt-4 border-t border-white/20 pt-4 flex flex-col gap-4"
-        >
-          {userRole === 'customer' ? (
+        <div style={{ backgroundColor: colors.darkPlum }} className="md:hidden mt-4 border-t border-white/20 pt-4 flex flex-col gap-4">
+          {isManager ? (
             <>
-              <button
-                onClick={() => {
-                  onNavigate('storefront');
-                  setIsMenuOpen(false);
-                }}
-                className="text-left opacity-80 hover:opacity-100"
-              >
-                Shop
-              </button>
-              <button
-                onClick={() => {
-                  onNavigate('cart');
-                  setIsMenuOpen(false);
-                }}
-                className="text-left opacity-80 hover:opacity-100"
-              >
-                Cart ({totalItems})
-              </button>
+              <button onClick={() => handleNav('analytics')} className="text-left opacity-80 hover:opacity-100">Analytics</button>
+              <button onClick={() => handleNav('inventory')} className="text-left opacity-80 hover:opacity-100">Inventory</button>
             </>
           ) : (
             <>
-              <button
-                onClick={() => {
-                  onNavigate('analytics');
-                  setIsMenuOpen(false);
-                }}
-                className="text-left opacity-80 hover:opacity-100"
-              >
-                Analytics
-              </button>
-              <button
-                onClick={() => {
-                  onNavigate('inventory');
-                  setIsMenuOpen(false);
-                }}
-                className="text-left opacity-80 hover:opacity-100"
-              >
-                Inventory
-              </button>
+              <button onClick={() => handleNav('storefront')} className="text-left opacity-80 hover:opacity-100">Shop</button>
+              <button onClick={() => handleNav('about')} className="text-left opacity-80 hover:opacity-100">About</button>
+              <button onClick={() => handleNav('cart')} className="text-left opacity-80 hover:opacity-100">Cart ({totalItems})</button>
             </>
           )}
         </div>

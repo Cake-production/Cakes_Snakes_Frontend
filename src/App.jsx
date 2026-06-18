@@ -1,10 +1,10 @@
 // src/App.jsx
 import React, { useEffect } from 'react';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import { useAuthStore } from './context/store';
 import { colors } from './constants/theme';
 
-// Existing pages
+// Pages
 import LoginPage from './pages/LoginPage';
 import StorefrontPage from './pages/StorefrontPage';
 import CartPage from './pages/CartPage';
@@ -17,12 +17,12 @@ import OrderHistoryPage from './pages/OrderHistoryPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
 import NotificationsPage from './pages/NotificationsPage';
 
-// Components (imports must be at the top)
+// Components
 import Header from './components/Header';
 import Footer from './components/Footer';
 
 // ------------------------------------------------------------------
-// Inline footer pages (definitions after all imports)
+// Footer / Static Pages (kept as inline components)
 // ------------------------------------------------------------------
 const FAQsPage = ({ onNavigate }) => (
   <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
@@ -104,6 +104,20 @@ const ContactPage = ({ onNavigate }) => (
   </main>
 );
 
+// ===== NEW ABOUT PAGE =====
+const AboutPage = ({ onNavigate }) => (
+  <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
+    <div className="max-w-4xl mx-auto">
+      <button onClick={() => onNavigate('storefront')} style={{ color: colors.gold }} className="mb-6 flex items-center gap-2 font-semibold">← Back to Shop</button>
+      <div className="bg-white p-8 rounded-lg shadow">
+        <h2 className="text-3xl font-bold mb-4">About Cakes & Snacks</h2>
+        <p className="mb-4">We are a premium artisanal bakery, crafting exquisite pastries, cakes, and confections with love and the finest ingredients.</p>
+        <p>Our journey began in a small kitchen, and today we serve customers worldwide with our signature creations.</p>
+      </div>
+    </div>
+  </main>
+);
+
 // ------------------------------------------------------------------
 // Main App Component
 // ------------------------------------------------------------------
@@ -111,31 +125,45 @@ const App = () => {
   const [currentPage, setCurrentPage] = React.useState('login');
   const { isLoggedIn, userRole, loadFromStorage } = useAuthStore();
 
+  const isManager = userRole === 'MANAGER' || userRole === 'ADMIN';
+
   useEffect(() => {
     loadFromStorage();
   }, [loadFromStorage]);
 
   const handleNavigate = (page) => {
+    // Restrict manager-only pages
+    const managerOnly = ['analytics', 'inventory'];
+    if (managerOnly.includes(page) && !isManager) {
+      toast.error('Access denied. Manager privileges required.');
+      return;
+    }
     setCurrentPage(page);
     window.scrollTo(0, 0);
   };
 
   const renderPage = () => {
     if (!isLoggedIn) {
-      return <LoginPage onLoginSuccess={() => handleNavigate(userRole === 'manager' ? 'analytics' : 'storefront')} />;
+      return (
+        <LoginPage
+          onLoginSuccess={() =>
+            handleNavigate(isManager ? 'analytics' : 'storefront')
+          }
+        />
+      );
     }
 
+    // Base pages (available to both roles)
     const pages = {
       storefront: <StorefrontPage onNavigate={handleNavigate} />,
       cart: <CartPage onNavigate={handleNavigate} />,
       checkout: <CheckoutPage onNavigate={handleNavigate} />,
-      analytics: <AnalyticsPage />,
-      inventory: <InventoryPage />,
       profile: <ProfilePage onNavigate={handleNavigate} />,
       'personal-info': <PersonalInfoPage onNavigate={handleNavigate} />,
       'order-history': <OrderHistoryPage onNavigate={handleNavigate} />,
       'payment-methods': <PaymentMethodsPage onNavigate={handleNavigate} />,
       notifications: <NotificationsPage onNavigate={handleNavigate} />,
+      about: <AboutPage onNavigate={handleNavigate} />, // about page for customers
       // Footer routes
       faqs: <FAQsPage onNavigate={handleNavigate} />,
       privacy: <PrivacyPolicyPage onNavigate={handleNavigate} />,
@@ -145,12 +173,18 @@ const App = () => {
       contact: <ContactPage onNavigate={handleNavigate} />,
     };
 
+    // Manager-only pages (protected)
+    if (isManager) {
+      pages.analytics = <AnalyticsPage />;
+      pages.inventory = <InventoryPage />;
+    }
+
     return pages[currentPage] || pages.storefront;
   };
 
   return (
     <div style={{ backgroundColor: colors.softCream, minHeight: '100vh' }}>
-      {isLoggedIn && <Header onNavigate={handleNavigate} userRole={userRole} />}
+      {isLoggedIn && <Header onNavigate={handleNavigate} />}
       {renderPage()}
       {isLoggedIn && <Footer onNavigate={handleNavigate} />}
       <Toaster position="top-right" />
