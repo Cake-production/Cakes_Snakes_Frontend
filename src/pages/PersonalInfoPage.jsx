@@ -18,17 +18,21 @@ const PersonalInfoPage = ({ onNavigate }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await userAPI.updateProfile(formData);
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update profile');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  e.preventDefault();
+  setIsLoading(true);
+  try {
+    const nameParts = formData.fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    const payload = { firstName, lastName, phone: formData.phone };
+    await userAPI.updateProfile(payload);
+    toast.success('Profile updated successfully!');
+  } catch (error) {
+    toast.error('Failed to update profile');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <main style={{ backgroundColor: colors.softCream }} className="py-12 px-6">
