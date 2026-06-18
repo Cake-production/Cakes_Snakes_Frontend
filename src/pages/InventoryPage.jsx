@@ -8,14 +8,18 @@ const InventoryPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null); // new state
   const [formData, setFormData] = useState({
     name: '',
     badge: '',
+    category: 'CAKES',
     stock: '',
     price: '',
     image: '📦'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const categories = ['CAKES', 'TARTS', 'PASTRIES', 'SEASONAL', 'MACARONS', 'CHOCOLATES'];
 
   useEffect(() => {
     fetchProducts();
@@ -27,18 +31,7 @@ const InventoryPage = () => {
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
-      // Fallback demo data with both image and imageUrl
-      setProducts([
-        { 
-          id: 1, 
-          name: 'Sample Product', 
-          badge: 'Demo', 
-          stock: 10, 
-          price: 29.99, 
-          image: '📦',
-          imageUrl: '📦'
-        }
-      ]);
+      setProducts([{ id: 1, name: 'Sample Product', badge: 'Demo', stock: 10, price: 29.99, image: '📦', imageUrl: '📦' }]);
       toast.error('Using demo data - API not available');
     } finally {
       setLoading(false);
@@ -53,7 +46,6 @@ const InventoryPage = () => {
         toast.success('Product deleted successfully');
       } catch (error) {
         console.error('Delete failed:', error);
-        // Fallback: remove locally anyway
         setProducts(products.filter((p) => p.id !== id));
         toast.success('Product removed locally (API failed)');
       }
@@ -61,12 +53,27 @@ const InventoryPage = () => {
   };
 
   const handleAddProduct = () => {
+    setEditingProduct(null);
     setFormData({
       name: '',
       badge: '',
+      category: 'CAKES',
       stock: '',
       price: '',
       image: '📦'
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name || '',
+      badge: product.badge || '',
+      category: product.category || 'CAKES',
+      stock: product.stock?.toString() || '',
+      price: product.price?.toString() || '',
+      image: product.image || product.imageUrl || '📦'
     });
     setIsModalOpen(true);
   };
@@ -78,7 +85,7 @@ const InventoryPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Validation
     if (!formData.name.trim()) {
       toast.error('Product name is required');
@@ -96,36 +103,54 @@ const InventoryPage = () => {
     }
 
     setIsSubmitting(true);
-  
-    const newProduct = {
+
+    const productData = {
       name: formData.name.trim(),
       badge: formData.badge.trim() || 'General',
+      category: formData.category,
       stock: stockNum,
       price: priceNum,
       image: formData.image || '📦'
     };
-  
+
     try {
-      const created = await productAPI.create(newProduct);
-      setProducts(prev => [...prev, created]);
-      toast.success('Product added successfully');
+      let result;
+      if (editingProduct) {
+        // Update existing product
+        result = await productAPI.update(editingProduct.id, productData);
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? result : p));
+        toast.success('Product updated successfully');
+      } else {
+        // Create new product
+        result = await productAPI.create(productData);
+        setProducts(prev => [...prev, result]);
+        toast.success('Product added successfully');
+      }
       setIsModalOpen(false);
     } catch (error) {
-      console.error('API create failed:', error);
-      console.error('Error details:', error.response?.data || error.message);
-    
+      console.error('Operation failed:', error);
       if (error.response) {
         toast.error(`Server error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
       } else if (error.request) {
-        toast.error('Network error - cannot reach server. Product added locally.');
-        const tempProduct = { ...newProduct, id: Date.now(), imageUrl: newProduct.image };
-        setProducts(prev => [...prev, tempProduct]);
+        toast.error('Network error - cannot reach server. Changes saved locally.');
+        // Fallback local update
+        const tempProduct = { ...productData, id: editingProduct?.id || Date.now(), imageUrl: productData.image };
+        if (editingProduct) {
+          setProducts(prev => prev.map(p => p.id === editingProduct.id ? tempProduct : p));
+        } else {
+          setProducts(prev => [...prev, tempProduct]);
+        }
+        setIsModalOpen(false);
       } else {
-        toast.error(`Failed to add: ${error.message}. Product saved locally.`);
-        const tempProduct = { ...newProduct, id: Date.now(), imageUrl: newProduct.image };
-        setProducts(prev => [...prev, tempProduct]);
+        toast.error(`Failed: ${error.message}. Changes saved locally.`);
+        const tempProduct = { ...productData, id: editingProduct?.id || Date.now(), imageUrl: productData.image };
+        if (editingProduct) {
+          setProducts(prev => prev.map(p => p.id === editingProduct.id ? tempProduct : p));
+        } else {
+          setProducts(prev => [...prev, tempProduct]);
+        }
+        setIsModalOpen(false);
       }
-      setIsModalOpen(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -138,9 +163,9 @@ const InventoryPage = () => {
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '40px' }} className="font-bold">
             Inventory Management
           </h2>
-          <button 
+          <button
             onClick={handleAddProduct}
-            style={{ backgroundColor: colors.gold, cursor: 'pointer' }} 
+            style={{ backgroundColor: colors.gold, cursor: 'pointer' }}
             className="px-6 py-3 font-semibold text-black rounded-lg hover:shadow-lg transition flex items-center gap-2"
           >
             <Plus size={20} />
@@ -171,14 +196,10 @@ const InventoryPage = () => {
                     <tr key={product.id} style={{ backgroundColor: idx % 2 === 0 ? colors.champagne : 'white', borderBottomColor: colors.lightGray }} className="border-b hover:opacity-80 transition">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div style={{ fontSize: '24px' }}>
-                            {product.imageUrl || product.image || '📦'}
-                          </div>
+                          <div style={{ fontSize: '24px' }}>{product.imageUrl || product.image || '📦'}</div>
                           <div>
                             <p className="font-semibold">{product.name}</p>
-                            <p style={{ color: '#666' }} className="text-xs">
-                              {product.badge}
-                            </p>
+                            <p style={{ color: '#666' }} className="text-xs">{product.badge}</p>
                           </div>
                         </div>
                       </td>
@@ -193,7 +214,12 @@ const InventoryPage = () => {
                         ${(product.price * product.stock).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 flex gap-2">
-                        <button style={{ color: colors.gold }} className="hover:opacity-80 transition">
+                        {/* Edit button - now has onClick */}
+                        <button
+                          onClick={() => handleEditClick(product)}
+                          style={{ color: colors.gold }}
+                          className="hover:opacity-80 transition"
+                        >
                           <Edit2 size={18} />
                         </button>
                         <button onClick={() => handleDelete(product.id)} style={{ color: colors.error }} className="hover:opacity-80 transition">
@@ -209,21 +235,21 @@ const InventoryPage = () => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal - reused for add and edit */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
-            <button 
+            <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
             >
               <X size={20} />
             </button>
-            
+
             <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Add New Product
+              {editingProduct ? 'Edit Product' : 'Add New Product'}
             </h3>
-            
+
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label className="block text-sm font-semibold mb-2">Product Name *</label>
@@ -236,9 +262,9 @@ const InventoryPage = () => {
                   required
                 />
               </div>
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Badge/Category</label>
+                <label className="block text-sm font-semibold mb-2">Badge</label>
                 <input
                   type="text"
                   name="badge"
@@ -248,7 +274,22 @@ const InventoryPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                 />
               </div>
-              
+
+              <div className="mb-4">
+                <label className="block text-sm font-semibold mb-2">Category *</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  required
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="mb-4">
                 <label className="block text-sm font-semibold mb-2">Stock Quantity *</label>
                 <input
@@ -261,7 +302,7 @@ const InventoryPage = () => {
                   required
                 />
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-semibold mb-2">Price ($) *</label>
                 <input
@@ -275,7 +316,7 @@ const InventoryPage = () => {
                   required
                 />
               </div>
-              
+
               <div className="mb-6">
                 <label className="block text-sm font-semibold mb-2">Image/Icon (Emoji or text)</label>
                 <input
@@ -287,7 +328,7 @@ const InventoryPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                 />
               </div>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
@@ -302,7 +343,7 @@ const InventoryPage = () => {
                   style={{ backgroundColor: colors.gold }}
                   className="px-4 py-2 text-black font-semibold rounded-lg hover:shadow-lg transition disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Adding...' : 'Add Product'}
+                  {isSubmitting ? (editingProduct ? 'Updating...' : 'Adding...') : (editingProduct ? 'Update Product' : 'Add Product')}
                 </button>
               </div>
             </form>

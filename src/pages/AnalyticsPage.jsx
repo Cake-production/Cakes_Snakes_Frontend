@@ -1,156 +1,147 @@
 import React, { useState, useEffect } from 'react';
 import { analyticsAPI } from '../services/api';
 import { colors } from '../constants/theme';
-import { mockDashboardStats, mockTopSellingProducts } from '../data/mockData';
+import { TrendingUp, ShoppingBag, Users, DollarSign } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AnalyticsPage = () => {
-  const [stats, setStats] = useState(mockDashboardStats);
   const [loading, setLoading] = useState(true);
-  const [topProducts, setTopProducts] = useState(mockTopSellingProducts);
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    totalCustomers: 0,
+    topProducts: [],
+    monthlySales: [],
+  });
 
   useEffect(() => {
-    fetchAnalytics();
+    fetchDashboardStats();
   }, []);
 
-  const fetchAnalytics = async () => {
+  const fetchDashboardStats = async () => {
     try {
-      const dashboardData = await analyticsAPI.getDashboardStats();
-      setStats(dashboardData);
+      const data = await analyticsAPI.getDashboardStats();
+      // Ensure data is an object with the expected properties
+      setStats({
+        totalRevenue: data.totalRevenue || 0,
+        totalOrders: data.totalOrders || 0,
+        totalCustomers: data.totalCustomers || 0,
+        topProducts: Array.isArray(data.topProducts) ? data.topProducts : [],
+        monthlySales: Array.isArray(data.monthlySales) ? data.monthlySales : [],
+      });
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      console.error('Failed to fetch dashboard stats:', error);
+      toast.error('Unable to load analytics data. Showing demo data.');
+      // Fallback demo data
+      setStats({
+        totalRevenue: 12450,
+        totalOrders: 156,
+        totalCustomers: 89,
+        topProducts: [
+          { name: 'Truffle Canelé Cake', sales: 45 },
+          { name: 'Gold Leaf Macarons', sales: 38 },
+          { name: 'Champagne Tier Cake', sales: 27 },
+        ],
+        monthlySales: [
+          { month: 'Jan', sales: 3200 },
+          { month: 'Feb', sales: 2800 },
+          { month: 'Mar', sales: 4100 },
+          { month: 'Apr', sales: 3800 },
+          { month: 'May', sales: 5200 },
+        ],
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: colors.softCream }}>
+        <p className="text-lg" style={{ color: colors.darkPlum }}>Loading analytics...</p>
+      </div>
+    );
+  }
+
   return (
-    <main style={{ backgroundColor: colors.softCream }} className="py-12 px-6">
+    <main style={{ backgroundColor: colors.softCream }} className="py-12 px-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-12">
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '40px' }} className="font-bold">
-            Analytics Dashboard
-          </h2>
-          <select style={{ borderColor: colors.gold }} className="border-2 px-4 py-2 rounded-lg focus:outline-none">
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>Last Quarter</option>
-            <option>This Year</option>
-          </select>
-        </div>
+        <h2 className="text-3xl font-bold mb-8" style={{ fontFamily: 'Playfair Display, serif', color: colors.darkPlum }}>
+          Analytics Dashboard
+        </h2>
 
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-4 gap-6 mb-12">
-          {stats.map((stat, idx) => (
-            <div key={idx} style={{ backgroundColor: 'white', borderTopColor: colors.gold }} className="border-t-4 p-6 rounded-lg shadow-md hover:shadow-lg transition">
-              <p style={{ color: '#666' }} className="text-sm mb-2">
-                {stat.label}
-              </p>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '28px' }} className="font-bold mb-2">
-                {stat.value}
-              </h3>
-              <p style={{ color: stat.trend === 'up' ? colors.success : colors.error }} className="text-sm font-semibold">
-                {stat.trend === 'up' ? '↑' : '↓'} {stat.change}
-              </p>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div className="bg-white rounded-xl shadow-md p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Total Revenue</p>
+              <p className="text-2xl font-bold" style={{ color: colors.gold }}>${stats.totalRevenue.toLocaleString()}</p>
             </div>
-          ))}
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
-          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px' }} className="shadow-md">
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px' }} className="font-bold mb-6">
-              Revenue Trend
-            </h3>
-            <div style={{ backgroundColor: colors.champagne, height: '300px', borderRadius: '8px' }} className="flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <div style={{ fontSize: '40px' }} className="mb-2">
-                  📈
-                </div>
-                <p>Revenue Chart Visualization</p>
-              </div>
+            <DollarSign size={40} style={{ color: colors.gold }} />
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Total Orders</p>
+              <p className="text-2xl font-bold" style={{ color: colors.darkPlum }}>{stats.totalOrders}</p>
             </div>
+            <ShoppingBag size={40} style={{ color: colors.darkPlum }} />
           </div>
-          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px' }} className="shadow-md">
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px' }} className="font-bold mb-6">
-              Sales by Category
-            </h3>
-            <div style={{ backgroundColor: colors.champagne, height: '300px', borderRadius: '8px' }} className="flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <div style={{ fontSize: '40px' }} className="mb-2">
-                  🥧
-                </div>
-                <p>Category Distribution</p>
-              </div>
+          <div className="bg-white rounded-xl shadow-md p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Total Customers</p>
+              <p className="text-2xl font-bold" style={{ color: colors.darkPlum }}>{stats.totalCustomers}</p>
             </div>
+            <Users size={40} style={{ color: colors.darkPlum }} />
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Growth</p>
+              <p className="text-2xl font-bold text-green-600">+12.5%</p>
+            </div>
+            <TrendingUp size={40} className="text-green-600" />
           </div>
         </div>
 
-        {/* Top Performing Products */}
-        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px' }} className="shadow-md">
-          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px' }} className="font-bold mb-6">
-            Top Performing Products
-          </h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            {topProducts.map((prod, idx) => (
-              <div key={idx} style={{ backgroundColor: colors.champagne, borderRadius: '8px', padding: '16px' }}>
-                <div style={{ fontSize: '60px', textAlign: 'center', marginBottom: '12px' }}>
-                  {prod.image}
-                </div>
-                <h4 className="font-semibold mb-2">{prod.name}</h4>
-                <div style={{ color: colors.gold }} className="text-sm font-semibold mb-1">
-                  {prod.price} per unit
-                </div>
-                <div style={{ color: colors.success }} className="text-lg font-bold">
-                  {prod.revenue}
-                </div>
-              </div>
-            ))}
+        {/* Monthly Sales Chart (simple bar representation) */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+          <h3 className="text-xl font-semibold mb-4" style={{ color: colors.darkPlum }}>Monthly Sales</h3>
+          <div className="flex items-end space-x-4 h-48">
+            {stats.monthlySales.length > 0 ? (
+              stats.monthlySales.map((item) => {
+                const max = Math.max(...stats.monthlySales.map(m => m.sales), 1);
+                const height = (item.sales / max) * 100;
+                return (
+                  <div key={item.month} className="flex flex-col items-center flex-1">
+                    <div
+                      className="w-full rounded-t"
+                      style={{ backgroundColor: colors.gold, height: `${height}%`, minHeight: '4px' }}
+                    />
+                    <p className="text-xs mt-2">{item.month}</p>
+                    <p className="text-xs font-semibold">${item.sales}</p>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-gray-500">No monthly sales data available</p>
+            )}
           </div>
         </div>
 
-        {/* Recent Orders Table */}
-        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px' }} className="shadow-md mt-12">
-          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px' }} className="font-bold mb-6">
-            Recent Orders
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead style={{ backgroundColor: colors.darkPlum, color: 'white' }}>
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Order ID</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Items</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { id: 'ORD-001', customer: 'Alexandra M.', items: 2, status: 'delivered', total: '$145.00' },
-                  { id: 'ORD-002', customer: 'James P.', items: 1, status: 'processing', total: '$95.00' },
-                  { id: 'ORD-003', customer: 'Elena R.', items: 3, status: 'confirmed', total: '$210.50' },
-                ].map((order, idx) => (
-                  <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? colors.champagne : 'white', borderBottomColor: colors.lightGray }} className="border-b">
-                    <td className="px-6 py-4 font-semibold">{order.id}</td>
-                    <td className="px-6 py-4">{order.customer}</td>
-                    <td className="px-6 py-4">{order.items} items</td>
-                    <td className="px-6 py-4">
-                      <span
-                        style={{
-                          backgroundColor: order.status === 'delivered' ? colors.success : colors.gold,
-                          color: order.status === 'delivered' ? 'white' : colors.darkPlum,
-                        }}
-                        className="text-xs px-3 py-1 rounded-full font-semibold capitalize"
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-bold">{order.total}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* Top Products */}
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h3 className="text-xl font-semibold mb-4" style={{ color: colors.darkPlum }}>Top Selling Products</h3>
+          {stats.topProducts.length > 0 ? (
+            <div className="space-y-3">
+              {stats.topProducts.map((product, idx) => (
+                <div key={idx} className="flex items-center justify-between border-b pb-2">
+                  <span className="font-medium">{product.name}</span>
+                  <span className="text-sm" style={{ color: colors.gold }}>{product.sales} units</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No product data available</p>
+          )}
         </div>
       </div>
     </main>
