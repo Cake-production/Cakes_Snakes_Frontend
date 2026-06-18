@@ -23,14 +23,21 @@ const InventoryPage = () => {
 
   const fetchProducts = async () => {
     try {
-      // Try to fetch from API, but if it fails, use demo data
       const data = await productAPI.getAll();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
-      // Fallback demo data so the page shows something
+      // Fallback demo data with both image and imageUrl
       setProducts([
-        { id: 1, name: 'Sample Product', badge: 'Demo', stock: 10, price: 29.99, image: '📦' }
+        { 
+          id: 1, 
+          name: 'Sample Product', 
+          badge: 'Demo', 
+          stock: 10, 
+          price: 29.99, 
+          image: '📦',
+          imageUrl: '📦'
+        }
       ]);
       toast.error('Using demo data - API not available');
     } finally {
@@ -54,7 +61,6 @@ const InventoryPage = () => {
   };
 
   const handleAddProduct = () => {
-    console.log('Opening add product modal');
     setFormData({
       name: '',
       badge: '',
@@ -70,72 +76,60 @@ const InventoryPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
   
-  // Validation
-  if (!formData.name.trim()) {
-    toast.error('Product name is required');
-    return;
-  }
-  const stockNum = parseInt(formData.stock);
-  const priceNum = parseFloat(formData.price);
-  if (isNaN(stockNum) || stockNum < 0) {
-    toast.error('Valid stock quantity is required');
-    return;
-  }
-  if (isNaN(priceNum) || priceNum <= 0) {
-    toast.error('Valid price is required');
-    return;
-  }
-
-  setIsSubmitting(true);
-  
-  const newProduct = {
-    name: formData.name.trim(),
-    badge: formData.badge.trim() || 'General',
-    stock: stockNum,
-    price: priceNum,
-    image: formData.image || '📦'
-  };
-  
-  try {
-    // Try to call API
-    const created = await productAPI.create(newProduct);
-    setProducts(prev => [...prev, created]);
-    toast.success('Product added successfully');
-    setIsModalOpen(false);
-  } catch (error) {
-    // Log the full error to console for debugging
-    console.error('API create failed:', error);
-    console.error('Error details:', error.response?.data || error.message);
-    
-    // Show specific error message to user
-    if (error.response) {
-      // Server responded with error status
-      toast.error(`Server error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
-    } else if (error.request) {
-      // Request was made but no response
-      toast.error('Network error - cannot reach server. Product added locally.');
-      
-      // Fallback: add product locally with temporary ID
-      const tempProduct = { ...newProduct, id: Date.now() };
-      setProducts(prev => [...prev, tempProduct]);
-    } else {
-      // Other errors
-      toast.error(`Failed to add: ${error.message}. Product saved locally.`);
-      
-      // Fallback: add locally
-      const tempProduct = { ...newProduct, id: Date.now() };
-      setProducts(prev => [...prev, tempProduct]);
+    // Validation
+    if (!formData.name.trim()) {
+      toast.error('Product name is required');
+      return;
     }
+    const stockNum = parseInt(formData.stock);
+    const priceNum = parseFloat(formData.price);
+    if (isNaN(stockNum) || stockNum < 0) {
+      toast.error('Valid stock quantity is required');
+      return;
+    }
+    if (isNaN(priceNum) || priceNum <= 0) {
+      toast.error('Valid price is required');
+      return;
+    }
+
+    setIsSubmitting(true);
+  
+    const newProduct = {
+      name: formData.name.trim(),
+      badge: formData.badge.trim() || 'General',
+      stock: stockNum,
+      price: priceNum,
+      image: formData.image || '📦'
+    };
+  
+    try {
+      const created = await productAPI.create(newProduct);
+      setProducts(prev => [...prev, created]);
+      toast.success('Product added successfully');
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('API create failed:', error);
+      console.error('Error details:', error.response?.data || error.message);
     
-    // Still close modal if we added locally
-    setIsModalOpen(false);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      if (error.response) {
+        toast.error(`Server error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
+      } else if (error.request) {
+        toast.error('Network error - cannot reach server. Product added locally.');
+        const tempProduct = { ...newProduct, id: Date.now(), imageUrl: newProduct.image };
+        setProducts(prev => [...prev, tempProduct]);
+      } else {
+        toast.error(`Failed to add: ${error.message}. Product saved locally.`);
+        const tempProduct = { ...newProduct, id: Date.now(), imageUrl: newProduct.image };
+        setProducts(prev => [...prev, tempProduct]);
+      }
+      setIsModalOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <main style={{ backgroundColor: colors.softCream }} className="py-12 px-6">
@@ -177,7 +171,9 @@ const InventoryPage = () => {
                     <tr key={product.id} style={{ backgroundColor: idx % 2 === 0 ? colors.champagne : 'white', borderBottomColor: colors.lightGray }} className="border-b hover:opacity-80 transition">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div style={{ fontSize: '24px' }}>{product.image}</div>
+                          <div style={{ fontSize: '24px' }}>
+                            {product.imageUrl || product.image || '📦'}
+                          </div>
                           <div>
                             <p className="font-semibold">{product.name}</p>
                             <p style={{ color: '#666' }} className="text-xs">
@@ -213,7 +209,7 @@ const InventoryPage = () => {
         )}
       </div>
 
-      {/* Modal - make sure it's rendered and visible */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
