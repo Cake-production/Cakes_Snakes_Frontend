@@ -236,7 +236,7 @@ npm run build
 
 Create `.env.local` file:
 ```
-REACT_APP_API_URL=http://localhost:3001/api
+REACT_APP_API_URL=http://192.168.1.136:8080
 REACT_APP_ENV=development
 ```
 
