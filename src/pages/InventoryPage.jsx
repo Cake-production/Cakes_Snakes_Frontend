@@ -1,23 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { productAPI } from '../services/api';
 import { colors } from '../constants/theme';
-import { Edit2, Trash2, Plus, X } from 'lucide-react';
+import { Edit2, Trash2, Plus, X, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null); // new state
+  const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    description: '',
     badge: '',
     category: 'CAKES',
     stock: '',
     price: '',
-    image: '📦'
+    image: '📦',
+    imageFile: null,
+    imagePreview: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
 
   const categories = ['CAKES', 'TARTS', 'PASTRIES', 'SEASONAL', 'MACARONS', 'CHOCOLATES'];
 
@@ -56,11 +60,14 @@ const InventoryPage = () => {
     setEditingProduct(null);
     setFormData({
       name: '',
+      description: '',
       badge: '',
       category: 'CAKES',
       stock: '',
       price: '',
-      image: '📦'
+      image: '📦',
+      imageFile: null,
+      imagePreview: null,
     });
     setIsModalOpen(true);
   };
@@ -69,11 +76,14 @@ const InventoryPage = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name || '',
+      description: product.description || '',
       badge: product.badge || '',
       category: product.category || 'CAKES',
       stock: product.stock?.toString() || '',
       price: product.price?.toString() || '',
-      image: product.image || product.imageUrl || '📦'
+      image: product.image || product.imageUrl || '📦',
+      imageFile: null,
+      imagePreview: product.imageUrl && product.imageUrl.startsWith('data:') ? product.imageUrl : null,
     });
     setIsModalOpen(true);
   };
@@ -81,6 +91,46 @@ const InventoryPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be less than 2MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({
+        ...prev,
+        imageFile: file,
+        imagePreview: reader.result,
+        image: reader.result, // store base64 in image field for payload
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      imageFile: null,
+      imagePreview: null,
+      image: '📦',
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -106,22 +156,21 @@ const InventoryPage = () => {
 
     const productData = {
       name: formData.name.trim(),
+      description: formData.description.trim() || '',
       badge: formData.badge.trim() || 'General',
       category: formData.category,
       stock: stockNum,
       price: priceNum,
-      image: formData.image || '📦'
+      image: formData.image || '📦',
     };
 
     try {
       let result;
       if (editingProduct) {
-        // Update existing product
         result = await productAPI.update(editingProduct.id, productData);
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? result : p));
         toast.success('Product updated successfully');
       } else {
-        // Create new product
         result = await productAPI.create(productData);
         setProducts(prev => [...prev, result]);
         toast.success('Product added successfully');
@@ -133,7 +182,6 @@ const InventoryPage = () => {
         toast.error(`Server error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
       } else if (error.request) {
         toast.error('Network error - cannot reach server. Changes saved locally.');
-        // Fallback local update
         const tempProduct = { ...productData, id: editingProduct?.id || Date.now(), imageUrl: productData.image };
         if (editingProduct) {
           setProducts(prev => prev.map(p => p.id === editingProduct.id ? tempProduct : p));
@@ -196,7 +244,15 @@ const InventoryPage = () => {
                     <tr key={product.id} style={{ backgroundColor: idx % 2 === 0 ? colors.champagne : 'white', borderBottomColor: colors.lightGray }} className="border-b hover:opacity-80 transition">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div style={{ fontSize: '24px' }}>{product.imageUrl || product.image || '📦'}</div>
+                          <div style={{ fontSize: '24px' }}>
+                          {(() => {
+                            const imageSrc = product.imageUrl || product.image || '📦';
+                            if (imageSrc.startsWith('data:image/')) {
+                              return <img src={imageSrc} alt={product.name} className="w-12 h-12 object-cover rounded" />;
+                            }
+                            return imageSrc;
+                          })()}
+                        </div>
                           <div>
                             <p className="font-semibold">{product.name}</p>
                             <p style={{ color: '#666' }} className="text-xs">{product.badge}</p>
@@ -214,7 +270,6 @@ const InventoryPage = () => {
                         ${(product.price * product.stock).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 flex gap-2">
-                        {/* Edit button - now has onClick */}
                         <button
                           onClick={() => handleEditClick(product)}
                           style={{ color: colors.gold }}
@@ -235,10 +290,10 @@ const InventoryPage = () => {
         )}
       </div>
 
-      {/* Modal - reused for add and edit */}
+      {/* Modal - 2-column layout */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
+          <div className="bg-white rounded-lg max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -246,90 +301,167 @@ const InventoryPage = () => {
               <X size={20} />
             </button>
 
-            <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            <h3 className="text-2xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
               {editingProduct ? 'Edit Product' : 'Add New Product'}
             </h3>
 
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Product Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                  required
-                />
+              {/* 2-column grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Left column */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Product Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Category *</label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                      required
+                    >
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Badge</label>
+                    <input
+                      type="text"
+                      name="badge"
+                      value={formData.badge}
+                      onChange={handleInputChange}
+                      placeholder="e.g., New, Limited, Bestseller"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Stock Quantity *</label>
+                    <input
+                      type="number"
+                      name="stock"
+                      value={formData.stock}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Price ($) *</label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      min="0.01"
+                      step="0.01"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Right column */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Description</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows="4"
+                      placeholder="Brief description of the product..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Image</label>
+                    <div className="flex flex-col gap-2">
+                      {/* Image preview */}
+                      {formData.imagePreview ? (
+                        <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+                          <img
+                            src={formData.imagePreview}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={removeImage}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-4xl"
+                          style={{ backgroundColor: colors.champagne }}
+                        >
+                          {formData.image || '📦'}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          style={{ backgroundColor: colors.gold }}
+                          className="px-4 py-2 text-sm font-semibold text-black rounded-lg hover:shadow-lg transition flex items-center gap-2"
+                        >
+                          <Upload size={16} />
+                          Upload Image
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const emoji = prompt('Enter an emoji or text icon:', formData.image || '📦');
+                            if (emoji !== null) {
+                              setFormData(prev => ({
+                                ...prev,
+                                image: emoji || '📦',
+                                imageFile: null,
+                                imagePreview: null,
+                              }));
+                            }
+                          }}
+                          className="px-4 py-2 text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                        >
+                          Use Emoji
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500">Upload an image or use an emoji as fallback</p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Badge</label>
-                <input
-                  type="text"
-                  name="badge"
-                  value={formData.badge}
-                  onChange={handleInputChange}
-                  placeholder="e.g., New, Limited, Bestseller"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Category *</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                  required
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Stock Quantity *</label>
-                <input
-                  type="number"
-                  name="stock"
-                  value={formData.stock}
-                  onChange={handleInputChange}
-                  min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Price ($) *</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  min="0.01"
-                  step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                  required
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-semibold mb-2">Image/Icon (Emoji or text)</label>
-                <input
-                  type="text"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 📦, 🎁, 👕"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-              </div>
-
-              <div className="flex gap-3 justify-end">
+              {/* Actions - full width */}
+              <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -341,7 +473,7 @@ const InventoryPage = () => {
                   type="submit"
                   disabled={isSubmitting}
                   style={{ backgroundColor: colors.gold }}
-                  className="px-4 py-2 text-black font-semibold rounded-lg hover:shadow-lg transition disabled:opacity-50"
+                  className="px-6 py-2 text-black font-semibold rounded-lg hover:shadow-lg transition disabled:opacity-50"
                 >
                   {isSubmitting ? (editingProduct ? 'Updating...' : 'Adding...') : (editingProduct ? 'Update Product' : 'Add Product')}
                 </button>

@@ -30,7 +30,6 @@ const StorefrontPage = ({ onNavigate }) => {
     setRotateY(0);
   };
 
-  // ✅ fetchProducts moved inside useEffect
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -53,14 +52,15 @@ const StorefrontPage = ({ onNavigate }) => {
 
   const inferCategory = (name, badge) => {
     const lowerName = name.toLowerCase();
-    if (lowerName.includes('cake') || badge?.toLowerCase().includes('cake')) return 'Cakes';
-    if (lowerName.includes('tart')) return 'Tarts';
-    if (lowerName.includes('pastry') || lowerName.includes('croissant')) return 'Pastries';
-    return 'Seasonal';
+    if (lowerName.includes('cake') || badge?.toLowerCase().includes('cake')) return 'CAKES';
+    if (lowerName.includes('tart')) return 'TARTS';
+    if (lowerName.includes('pastry') || lowerName.includes('croissant')) return 'PASTRIES';
+    return 'SEASONAL';
   };
 
+  // Filter products by selected category (case-insensitive)
   const filteredProducts = selectedCategory
-    ? products.filter(p => p.category === selectedCategory)
+    ? products.filter(p => p.category && p.category.toUpperCase() === selectedCategory.toUpperCase())
     : products;
 
   const handleCategoryClick = (category) => {
@@ -79,9 +79,18 @@ const StorefrontPage = ({ onNavigate }) => {
     toast.success(`${product.name} added to cart!`);
   };
 
+  // Helper to render product image (emoji or base64)
+  const renderProductImage = (product) => {
+    const src = product.imageUrl || product.image || '📦';
+    if (typeof src === 'string' && src.startsWith('data:image/')) {
+      return <img src={src} alt={product.name} className="w-full h-full object-cover" />;
+    }
+    return <span style={{ fontSize: '80px' }}>{src}</span>;
+  };
+
   return (
     <main style={{ backgroundColor: colors.softCream }}>
-      {/* Hero Section with CSS particles (as provided earlier) */}
+      {/* Hero Section */}
       <section
         ref={heroRef}
         onMouseMove={handleMouseMove}
@@ -95,7 +104,6 @@ const StorefrontPage = ({ onNavigate }) => {
         }}
         className="text-white py-20 px-6"
       >
-        {/* CSS particle background (same as before) */}
         <div className="hero-particle-bg" style={{
           position: 'absolute',
           inset: 0,
@@ -191,7 +199,7 @@ const StorefrontPage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Best Sellers section (unchanged) */}
+      {/* Products Section */}
       <section id="products-section" className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 flex justify-between items-center flex-wrap gap-4">
@@ -237,11 +245,12 @@ const StorefrontPage = ({ onNavigate }) => {
                   style={{ backgroundColor: 'white', borderRadius: '12px' }}
                   className="product-card shadow-md overflow-hidden hover:shadow-xl transition group"
                 >
+                  {/* Product Image */}
                   <div
-                    style={{ backgroundColor: colors.champagne, fontSize: '100px' }}
-                    className="product-image h-56 flex items-center justify-center group-hover:scale-105 transition"
+                    style={{ backgroundColor: colors.champagne }}
+                    className="product-image h-56 flex items-center justify-center group-hover:scale-105 transition overflow-hidden"
                   >
-                    {product.image}
+                    {renderProductImage(product)}
                   </div>
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-2">
@@ -273,7 +282,7 @@ const StorefrontPage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Categories (unchanged) */}
+      {/* Categories Section */}
       <section style={{ backgroundColor: colors.champagne }} className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '40px' }} className="font-bold mb-12">

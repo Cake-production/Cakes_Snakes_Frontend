@@ -1,30 +1,45 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-export const useAuthStore = create((set) => ({
-  isLoggedIn: false,
-  user: null,
-  userRole: 'customer',
+// ============================================================
+// AUTH STORE
+// ============================================================
+export const useAuthStore = create(
+  persist(
+    (set) => ({
+      isLoggedIn: false,
+      user: null,
+      userRole: 'customer',
 
-  login: (user, role) => {
-    set({ isLoggedIn: true, user, userRole: role });
-    localStorage.setItem('user', JSON.stringify({ user, role }));
-  },
+      login: (user, role) => {
+        set({ isLoggedIn: true, user, userRole: role });
+        localStorage.setItem('user', JSON.stringify({ user, role }));
+      },
 
-  logout: () => {
-    set({ isLoggedIn: false, user: null, userRole: 'customer' });
-    localStorage.removeItem('user');
-    localStorage.removeItem('authToken');
-  },
+      logout: () => {
+        set({ isLoggedIn: false, user: null, userRole: 'customer' });
+        localStorage.removeItem('user');
+        localStorage.removeItem('authToken');
+      },
 
-  loadFromStorage: () => {
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      const { user, role } = JSON.parse(stored);
-      set({ isLoggedIn: true, user, userRole: role });
+      loadFromStorage: () => {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          const { user, role } = JSON.parse(stored);
+          set({ isLoggedIn: true, user, userRole: role });
+        }
+      },
+    }),
+    {
+      name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
     }
-  },
-}));
+  )
+);
 
+// ============================================================
+// CART STORE
+// ============================================================
 export const useCartStore = create((set) => ({
   items: [],
   totalItems: 0,
@@ -32,7 +47,7 @@ export const useCartStore = create((set) => ({
 
   addItem: (product) => {
     set((state) => {
-      const newItems = [...state.items, { ...product, cartId: Math.random() }];
+      const newItems = [...state.items, { ...product, cartId: Date.now() }];
       const total = newItems.reduce((sum, item) => sum + item.price, 0);
       return {
         items: newItems,
@@ -57,23 +72,11 @@ export const useCartStore = create((set) => ({
   clearCart: () => {
     set({ items: [], totalItems: 0, totalPrice: 0 });
   },
-
-  getTotalPrice: () => {
-    const state = useCartStore.getState();
-    return state.totalPrice;
-  },
 }));
 
-export const useProductStore = create((set) => ({
-  products: [],
-  loading: false,
-  error: null,
-
-  setProducts: (products) => set({ products }),
-  setLoading: (loading) => set({ loading }),
-  setError: (error) => set({ error }),
-}));
-
+// ============================================================
+// ORDER STORE
+// ============================================================
 export const useOrderStore = create((set) => ({
   orders: [],
   currentOrder: null,
@@ -89,4 +92,17 @@ export const useOrderStore = create((set) => ({
       currentOrder: order,
     }));
   },
+}));
+
+// ============================================================
+// PRODUCT STORE
+// ============================================================
+export const useProductStore = create((set) => ({
+  products: [],
+  loading: false,
+  error: null,
+
+  setProducts: (products) => set({ products }),
+  setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
 }));
