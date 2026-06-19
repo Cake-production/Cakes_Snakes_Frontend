@@ -5,7 +5,6 @@ import {
   mockRecentOrders,
   mockDashboardStats,
 } from "../data/mockData";
-import { jwtDecode } from "jwt-decode";
 
 // ---- BASE URL (Spring Boot runs on 8080 with context path /api) ----
 const API_BASE_URL =
@@ -43,7 +42,6 @@ apiClient.interceptors.response.use(
 //  PRODUCTS API
 // ============================================================
 export const productAPI = {
-  // GET all products
   getAll: async () => {
     try {
       return await apiClient.get(ENDPOINTS.getAllProducts);
@@ -55,7 +53,6 @@ export const productAPI = {
     }
   },
 
-  // GET product by ID
   getById: async (id) => {
     try {
       return await apiClient.get(ENDPOINTS.getProductById(id));
@@ -65,14 +62,13 @@ export const productAPI = {
     }
   },
 
-  // CREATE product – maps frontend fields to ProductCreateDTO
   create: async (productData) => {
     const payload = {
       name: productData.name,
       description: productData.description || "",
       price: parseFloat(productData.price),
       stock: parseInt(productData.stock, 10),
-      category: productData.category || "General",
+      category: productData.category || "CAKES",
       badge: productData.badge || "",
       imageUrl: productData.image || productData.imageUrl || "",
     };
@@ -84,14 +80,13 @@ export const productAPI = {
     }
   },
 
-  // UPDATE product
   update: async (id, productData) => {
     const payload = {
       name: productData.name,
       description: productData.description || "",
       price: parseFloat(productData.price),
       stock: parseInt(productData.stock, 10),
-      category: productData.category || "General",
+      category: productData.category || "CAKES",
       badge: productData.badge || "",
       imageUrl: productData.image || productData.imageUrl || "",
     };
@@ -103,7 +98,6 @@ export const productAPI = {
     }
   },
 
-  // DELETE product
   delete: async (id) => {
     try {
       await apiClient.delete(ENDPOINTS.deleteProduct(id));
@@ -113,7 +107,6 @@ export const productAPI = {
     }
   },
 
-  // Additional product endpoints
   getByCategory: async (category) => {
     try {
       return await apiClient.get(ENDPOINTS.getProductsByCategory(category));
@@ -156,7 +149,7 @@ export const productAPI = {
 export const orderAPI = {
   getAll: async () => {
     try {
-      return await apiClient.get("/orders"); // adjust if you have an endpoint
+      return await apiClient.get("/orders");
     } catch (error) {
       console.warn("Falling back to mock orders");
       return new Promise((resolve) =>
@@ -178,12 +171,14 @@ export const orderAPI = {
     try {
       return await apiClient.post(ENDPOINTS.createOrder(userId), orderData);
     } catch (error) {
-      // Mock fallback
+      // Mock fallback (only for development)
       const mockOrder = {
         id: `ORD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
         ...orderData,
-        status: "confirmed",
-        date: new Date().toLocaleDateString(),
+        status: "CONFIRMED",
+        orderNumber: `ORD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+        createdAt: new Date().toISOString(),
+        totalAmount: orderData?.total || 0,
       };
       return new Promise((resolve) =>
         setTimeout(() => resolve(mockOrder), 800),
@@ -193,7 +188,7 @@ export const orderAPI = {
 
   updateStatus: async (id, status) => {
     try {
-      return await apiClient.patch(ENDPOINTS.updateOrderStatus(id, status), {});
+      return await apiClient.put(ENDPOINTS.updateOrderStatus(id, status), {});
     } catch (error) {
       console.error("Update order status failed:", error);
       throw error;
@@ -220,7 +215,7 @@ export const orderAPI = {
 };
 
 // ============================================================
-//  USERS API – FIXED (no mock login fallback)
+//  USERS API
 // ============================================================
 export const userAPI = {
   login: async (email, password) => {
@@ -229,24 +224,18 @@ export const userAPI = {
       localStorage.setItem("authToken", response.token);
     }
 
-    // 👇 Store the user ID from the backend response
-    // The backend returns { token, refreshToken, userDTO, role }
-    // userDTO contains { id, email, firstName, lastName, ... }
-    if (response.userDTO && response.userDTO.id) {
-      localStorage.setItem("userId", String(response.userDTO.id));
-    }
-    // Fallback: if response uses 'user' instead of 'userDTO'
-    else if (response.user && response.user.id) {
-      localStorage.setItem("userId", String(response.user.id));
+    // Store user ID from the response – handle both `userDTO` and `user` fields
+    const userData = response.userDTO || response.user;
+    if (userData && userData.id) {
+      localStorage.setItem("userId", String(userData.id));
     }
 
     return response;
   },
 
-  // Logout – clear token
   logout: async () => {
     localStorage.removeItem("authToken");
-    localStorage.removeItem("userId"); // add this
+    localStorage.removeItem("userId");
     try {
       await apiClient.post(ENDPOINTS.logout);
     } catch (e) {
@@ -255,11 +244,8 @@ export const userAPI = {
     return Promise.resolve();
   },
 
-  // Get profile – uses stored user ID (you need to store it after login)
   getProfile: async () => {
     try {
-      // We assume the user ID is stored in localStorage after login
-      // You can also use Zustand store
       const userId = localStorage.getItem("userId");
       if (userId) {
         return await apiClient.get(ENDPOINTS.getUserById(userId));
@@ -269,42 +255,29 @@ export const userAPI = {
       console.warn("Falling back to mock profile");
       return {
         id: "cust_001",
-        name: "Alexandra Beaumont",
+        firstName: "Alexandra",
+        lastName: "Beaumont",
         email: "alexandra@example.com",
         phone: "+1 (555) 123-4567",
-        role: "customer",
+        role: "CUSTOMER",
       };
     }
   },
 
-  // Update profile
- updateProfile: async (userData) => {
-  try {
-    // 1. Get the stored user object
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      throw new Error('No user found in localStorage');
+  updateProfile: async (userData) => {
+    try {
+      // Get the user ID from localStorage (stored as 'userId')
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("No user ID found");
+      }
+      return await apiClient.put(ENDPOINTS.updateUser(userId), userData);
+    } catch (error) {
+      console.error("Update profile failed:", error);
+      throw error;
     }
+  },
 
-    // 2. Parse it
-    const userObj = JSON.parse(userStr);
-    // The structure is: { user: { id, email, name, role }, role: ... }
-    // So we need userObj.user.id
-    const userId = userObj.user?.id || userObj.id; // fallback
-
-    if (!userId) {
-      throw new Error('No user ID found');
-    }
-
-    // 3. Make the API call with the extracted userId
-    return await apiClient.put(ENDPOINTS.updateUser(userId), userData);
-  } catch (error) {
-    console.error('Update profile failed:', error);
-    throw error;
-  }
-},
-
-  // Get user by ID
   getById: async (id) => {
     try {
       return await apiClient.get(ENDPOINTS.getUserById(id));
@@ -314,7 +287,6 @@ export const userAPI = {
     }
   },
 
-  // Get all customers
   getAllCustomers: async () => {
     try {
       return await apiClient.get(ENDPOINTS.getAllCustomers);
@@ -324,7 +296,6 @@ export const userAPI = {
     }
   },
 
-  // Delete user
   deleteUser: async (id) => {
     try {
       await apiClient.delete(ENDPOINTS.deleteUser(id));
@@ -391,11 +362,12 @@ export const paymentAPI = {
     try {
       return await apiClient.post(ENDPOINTS.processPayment, paymentData);
     } catch (error) {
+      // Mock fallback (development only)
       const mockPaymentResponse = {
         id: `pay_${Math.random().toString(36).substr(2, 9)}`,
-        status: "succeeded",
+        status: "COMPLETED",
         amount: paymentData.amount,
-        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
       };
       return new Promise((resolve) =>
         setTimeout(() => resolve(mockPaymentResponse), 1500),
@@ -411,9 +383,10 @@ export const paymentAPI = {
         return await apiClient.get("/payments/methods");
       }
     } catch (error) {
+      // Mock fallback
       return [
-        { id: "pm_001", brand: "Visa", last4: "4242", expiry: "12/26" },
-        { id: "pm_002", brand: "Mastercard", last4: "5555", expiry: "03/27" },
+        { id: 1, cardBrand: "Visa", lastFourDigits: "4242", expiryMonth: "12", expiryYear: "26", isDefault: true },
+        { id: 2, cardBrand: "Mastercard", lastFourDigits: "5555", expiryMonth: "03", expiryYear: "27", isDefault: false },
       ];
     }
   },
@@ -432,7 +405,7 @@ export const paymentAPI = {
 
   setDefault: async (methodId) => {
     try {
-      return await apiClient.post(ENDPOINTS.setDefaultPaymentMethod(methodId));
+      return await apiClient.put(ENDPOINTS.setDefaultPaymentMethod(methodId));
     } catch (error) {
       console.error("Set default payment method failed:", error);
       throw error;
