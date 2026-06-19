@@ -2,7 +2,7 @@
 import React from 'react';
 import { colors } from '../constants/theme';
 
-const Footer = ({ onNavigate }) => {  // ← must accept onNavigate
+const Footer = ({ onNavigate }) => {
   return (
     <footer style={{ backgroundColor: colors.darkPlum }} className="text-white py-12 px-6 mt-16">
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 mb-8">
@@ -20,7 +20,7 @@ const Footer = ({ onNavigate }) => {  // ← must accept onNavigate
           <ul style={{ color: colors.champagne, fontSize: '14px' }} className="space-y-2">
             <li><button onClick={() => onNavigate('storefront')} className="hover:opacity-100 opacity-80 transition">Collections</button></li>
             <li><button onClick={() => onNavigate('best-sellers')} className="hover:opacity-100 opacity-80 transition">Best Sellers</button></li>
-            <li><button onClick={() => onNavigate('storefront')} className="hover:opacity-100 opacity-80 transition">About</button></li>
+            <li><button onClick={() => onNavigate('about')} className="hover:opacity-100 opacity-80 transition">About</button></li> {/* ✅ FIXED */}
           </ul>
         </div>
 

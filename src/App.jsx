@@ -25,61 +25,588 @@ import Footer from './components/Footer';
 // ------------------------------------------------------------------
 // Footer / Static Pages (kept as inline components)
 // ------------------------------------------------------------------
-const FAQsPage = ({ onNavigate }) => (
-  <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
-    <div className="max-w-4xl mx-auto">
-      <button onClick={() => onNavigate('storefront')} style={{ color: colors.gold }} className="mb-6 flex items-center gap-2 font-semibold">← Back to Shop</button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
-        <div className="space-y-4">
-          <div><h3 className="font-bold">How do I place an order?</h3><p>Add items to cart and proceed to checkout.</p></div>
-          <div><h3 className="font-bold">What is your delivery time?</h3><p>Standard: 5-7 days, Express: 2-3 days, White Glove: next day.</p></div>
-          <div><h3 className="font-bold">Can I customize my cake?</h3><p>Yes, contact our support team.</p></div>
+const FAQsPage = ({ onNavigate }) => {
+  const faqCategories = [
+    {
+      title: "🛒 Ordering",
+      icon: "🛒",
+      questions: [
+        {
+          q: "How do I place an order?",
+          a: "Browse our collections, add items to your cart, and proceed to checkout. You’ll be guided step‑by‑step – it’s quick and easy."
+        },
+        {
+          q: "Can I modify my order after placing it?",
+          a: "Yes – contact us within 1 hour of placing your order and we’ll do our best to accommodate changes."
+        }
+      ]
+    },
+    {
+      title: "🚚 Delivery",
+      icon: "🚚",
+      questions: [
+        {
+          q: "What delivery options do you offer?",
+          a: "Standard (5–7 days, free), Express (2–3 days, $25), and White Glove (next day, $85). All orders include tracking."
+        },
+        {
+          q: "Do you deliver outside Sri Lanka?",
+          a: "Currently we deliver only within Sri Lanka. We’re working on expanding internationally – stay tuned!"
+        }
+      ]
+    },
+    {
+      title: "🎨 Customisation",
+      icon: "🎨",
+      questions: [
+        {
+          q: "Can I customise my cake?",
+          a: "Absolutely! We love bespoke creations. Just share your ideas – flavours, fillings, designs – and we’ll bring them to life."
+        }
+      ]
+    },
+    {
+      title: "🔄 Returns & Refunds",
+      icon: "🔄",
+      questions: [
+        {
+          q: "What is your return policy?",
+          a: "If your order arrives damaged or incorrect, notify us within 24 hours. We’ll replace it or issue a full refund – your satisfaction matters."
+        },
+        {
+          q: "Can I cancel my order?",
+          a: "Orders can be cancelled within 1 hour of placement. After that, we’ve already started crafting your treats."
+        }
+      ]
+    },
+    {
+      title: "📦 Tracking",
+      icon: "📦",
+      questions: [
+        {
+          q: "How can I track my order?",
+          a: "Once dispatched, you’ll receive a tracking link via email. You can monitor your delivery in real time."
+        }
+      ]
+    },
+    {
+      title: "💳 Payment",
+      icon: "💳",
+      questions: [
+        {
+          q: "What payment methods do you accept?",
+          a: "We accept Visa, Mastercard, Apple Pay, and PayPal – all securely processed."
+        }
+      ]
+    }
+  ];
+
+  return (
+    <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
+      <div className="max-w-5xl mx-auto">
+        <button
+          onClick={() => onNavigate('storefront')}
+          style={{ color: colors.gold }}
+          className="mb-6 flex items-center gap-2 font-semibold hover:opacity-80 transition"
+        >
+          ← Back to Shop
+        </button>
+
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div style={{ backgroundColor: colors.darkPlum }} className="px-8 py-6 text-white">
+            <h2 className="text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="opacity-80 text-sm mt-1">
+              Everything you need to know – from ordering to delivery and beyond.
+            </p>
+          </div>
+
+          <div className="p-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              {faqCategories.map((category, idx) => (
+                <div key={idx}>
+                  <h3 className="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
+                    <span style={{ fontSize: '24px' }}>{category.icon}</span>
+                    {category.title}
+                  </h3>
+                  <div className="space-y-4">
+                    {category.questions.map((item, qIdx) => (
+                      <div key={qIdx} className="border-l-2 border-gold pl-3">
+                        <p className="font-semibold text-gray-800 text-sm">{item.q}</p>
+                        <p className="text-gray-600 text-sm mt-0.5">{item.a}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: colors.champagne }} className="px-8 py-6 text-center">
+            <p className="text-gray-700">
+              Still have questions?{' '}
+              <button
+                onClick={() => onNavigate('contact')}
+                style={{ color: colors.gold }}
+                className="font-semibold hover:underline"
+              >
+                Contact our team
+              </button>
+              – we’re always happy to help.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  </main>
-);
+    </main>
+  );
+};
 
-const PrivacyPolicyPage = ({ onNavigate }) => (
-  <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
-    <div className="max-w-4xl mx-auto">
-      <button onClick={() => onNavigate('storefront')} style={{ color: colors.gold }} className="mb-6 flex items-center gap-2 font-semibold">← Back to Shop</button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <h2 className="text-3xl font-bold mb-4">Privacy Policy</h2>
-        <p>Your privacy is important to us. We collect only necessary information to process your orders and never share your data with third parties.</p>
-      </div>
-    </div>
-  </main>
-);
+const PrivacyPolicyPage = ({ onNavigate }) => {
+  return (
+    <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => onNavigate('storefront')}
+          style={{ color: colors.gold }}
+          className="mb-6 flex items-center gap-2 font-semibold hover:opacity-80 transition"
+        >
+          ← Back to Shop
+        </button>
 
-const TermsPage = ({ onNavigate }) => (
-  <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
-    <div className="max-w-4xl mx-auto">
-      <button onClick={() => onNavigate('storefront')} style={{ color: colors.gold }} className="mb-6 flex items-center gap-2 font-semibold">← Back to Shop</button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <h2 className="text-3xl font-bold mb-4">Terms of Service</h2>
-        <p>By using our website, you agree to these terms. All orders are subject to availability.</p>
-      </div>
-    </div>
-  </main>
-);
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Header */}
+          <div style={{ backgroundColor: colors.darkPlum }} className="px-8 py-6 text-white">
+            <h2 className="text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Privacy Policy
+            </h2>
+            <p className="opacity-80 text-sm mt-1">
+              Your trust matters to us – here's how we protect your information.
+            </p>
+          </div>
 
-const ShippingDetailsPage = ({ onNavigate }) => (
-  <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
-    <div className="max-w-4xl mx-auto">
-      <button onClick={() => onNavigate('storefront')} style={{ color: colors.gold }} className="mb-6 flex items-center gap-2 font-semibold">← Back to Shop</button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <h2 className="text-3xl font-bold mb-4">Shipping Information</h2>
-        <ul className="list-disc pl-5 space-y-2">
-          <li><strong>Standard Delivery</strong> – 5-7 business days · Free</li>
-          <li><strong>Express Delivery</strong> – 2-3 business days · $25</li>
-          <li><strong>White Glove Delivery</strong> – Next day · $85</li>
-        </ul>
+          <div className="p-8 space-y-6 text-gray-700">
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Last Updated: June 2025</p>
+              <p>
+                At <strong style={{ color: colors.darkPlum }}>Cakes & Snacks</strong>, we value your privacy
+                and are committed to protecting your personal information. This policy explains how we
+                collect, use, and safeguard your data.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🔒</span> Information We Collect
+              </h3>
+              <ul className="list-disc pl-8 mt-2 space-y-1 text-sm">
+                <li><strong>Personal Details:</strong> Name, email, phone number, and delivery address.</li>
+                <li><strong>Order History:</strong> Products purchased, preferences, and feedback.</li>
+                <li><strong>Payment Information:</strong> Securely processed via our trusted payment partners – we never store full card details.</li>
+                <li><strong>Website Usage:</strong> Cookies to improve your browsing experience.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>📊</span> How We Use Your Information
+              </h3>
+              <ul className="list-disc pl-8 mt-2 space-y-1 text-sm">
+                <li>To process orders and deliver your purchases.</li>
+                <li>To communicate order updates, promotions, and new collections (only with your consent).</li>
+                <li>To improve our products and services based on your feedback.</li>
+                <li>To ensure a safe and secure shopping experience.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🤝</span> Sharing Your Information
+              </h3>
+              <p className="text-sm mt-1">
+                We never sell or rent your personal data. We may share information with trusted partners
+                solely for order fulfilment (e.g., delivery services, payment processors) – they are
+                contractually bound to keep your data secure.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🛡️</span> Data Security
+              </h3>
+              <p className="text-sm mt-1">
+                We implement industry‑standard security measures, including SSL encryption, to protect
+                your data during transmission. Access to your personal information is restricted to
+                authorised personnel only.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🍪</span> Cookies
+              </h3>
+              <p className="text-sm mt-1">
+                We use cookies to enhance your shopping experience. You can manage cookie preferences
+                in your browser settings. By continuing to use our site, you consent to our use of cookies.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>📧</span> Your Rights
+              </h3>
+              <ul className="list-disc pl-8 mt-2 space-y-1 text-sm">
+                <li>Access, update, or correct your personal data at any time.</li>
+                <li>Request deletion of your account and data (subject to legal obligations).</li>
+                <li>Opt out of marketing communications with one click.</li>
+                <li>Withdraw consent for data processing at any time.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>📬</span> Contact Us
+              </h3>
+              <p className="text-sm mt-1">
+                If you have any questions about our privacy practices, please reach out:
+              </p>
+              <div style={{ backgroundColor: colors.champagne }} className="mt-2 p-4 rounded-lg text-sm">
+                <p><strong>Email:</strong> <a href="mailto:info@cakesandsnacks.com" style={{ color: colors.gold }}>info@cakesandsnacks.com</a></p>
+                <p><strong>Phone:</strong> <a href="tel:0769248360" style={{ color: colors.gold }}>076 924 8360</a></p>
+                <p><strong>Address:</strong> Nagapossani Amman Lane, Kondavil East, Kondavil</p>
+              </div>
+            </div>
+
+            <div className="text-xs text-gray-400 italic border-t pt-4">
+              We reserve the right to update this policy. Changes will be posted on this page.
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </main>
-);
+    </main>
+  );
+};
+
+const TermsPage = ({ onNavigate }) => {
+  return (
+    <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => onNavigate('storefront')}
+          style={{ color: colors.gold }}
+          className="mb-6 flex items-center gap-2 font-semibold hover:opacity-80 transition"
+        >
+          ← Back to Shop
+        </button>
+
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Header */}
+          <div style={{ backgroundColor: colors.darkPlum }} className="px-8 py-6 text-white">
+            <h2 className="text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Terms of Service
+            </h2>
+            <p className="opacity-80 text-sm mt-1">
+              Your use of our website and services is subject to the following terms.
+            </p>
+          </div>
+
+          <div className="p-8 space-y-6 text-gray-700">
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Last Updated: June 2025</p>
+              <p>
+                Welcome to <strong style={{ color: colors.darkPlum }}>Cakes & Snacks</strong>. By using our website
+                and placing an order, you agree to these Terms of Service. Please read them carefully.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>📋</span> 1. Acceptance of Terms
+              </h3>
+              <p className="text-sm mt-1">
+                By accessing or using our website, you agree to be bound by these terms and our Privacy Policy.
+                If you do not agree, please do not use our services.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🛒</span> 2. Order Acceptance
+              </h3>
+              <p className="text-sm mt-1">
+                All orders are subject to acceptance and availability. We reserve the right to cancel or refuse
+                any order for reasons including but not limited to product unavailability, payment verification,
+                or suspected fraudulent activity.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>💰</span> 3. Pricing and Payment
+              </h3>
+              <ul className="list-disc pl-8 mt-2 space-y-1 text-sm">
+                <li>All prices are in Sri Lankan Rupees (LKR) and include applicable taxes unless stated otherwise.</li>
+                <li>Delivery costs are calculated at checkout and vary based on your selected delivery option.</li>
+                <li>We accept Visa, Mastercard, Apple Pay, and PayPal – all payments are securely processed.</li>
+                <li>We reserve the right to update prices without prior notice, but changes will not affect confirmed orders.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🚚</span> 4. Delivery
+              </h3>
+              <p className="text-sm mt-1">
+                Delivery times are estimated and not guaranteed. We strive to deliver within the timeframe
+                selected, but unforeseen circumstances may cause delays. Standard, Express, and White Glove
+                options are available – full details are provided at checkout.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🔄</span> 5. Returns and Cancellations
+              </h3>
+              <ul className="list-disc pl-8 mt-2 space-y-1 text-sm">
+                <li>Perishable items are non‑returnable unless damaged or incorrect upon arrival.</li>
+                <li>If your order is damaged or incorrect, notify us within 24 hours of delivery for a replacement or refund.</li>
+                <li>Orders can be cancelled within 1 hour of placement – after that, our team begins crafting your treats.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🔒</span> 6. Intellectual Property
+              </h3>
+              <p className="text-sm mt-1">
+                All content on this website – including text, images, logos, and product designs – is the
+                property of Cakes & Snacks. Unauthorised use, reproduction, or distribution is strictly prohibited.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>⚠️</span> 7. Limitation of Liability
+              </h3>
+              <p className="text-sm mt-1">
+                To the fullest extent permitted by law, Cakes & Snacks shall not be liable for any indirect,
+                incidental, or consequential damages arising from the use of our products or services.
+                Our liability is limited to the total amount paid for the relevant order.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🔗</span> 8. Third‑Party Links
+              </h3>
+              <p className="text-sm mt-1">
+                Our website may contain links to third‑party sites. We are not responsible for their content or
+                privacy practices – we encourage you to review their policies before engaging.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>⚖️</span> 9. Governing Law
+              </h3>
+              <p className="text-sm mt-1">
+                These terms are governed by and construed in accordance with the laws of Sri Lanka.
+                Any disputes shall be resolved in the competent courts of Jaffna, Sri Lanka.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>📞</span> 10. Contact Us
+              </h3>
+              <p className="text-sm mt-1">
+                If you have any questions about these terms, please reach out:
+              </p>
+              <div style={{ backgroundColor: colors.champagne }} className="mt-2 p-4 rounded-lg text-sm">
+                <p><strong>Email:</strong> <a href="mailto:info@cakesandsnacks.com" style={{ color: colors.gold }}>info@cakesandsnacks.com</a></p>
+                <p><strong>Phone:</strong> <a href="tel:0769248360" style={{ color: colors.gold }}>076 924 8360</a></p>
+                <p><strong>Address:</strong> Nagapossani Amman Lane, Kondavil East, Kondavil</p>
+              </div>
+            </div>
+
+            <div className="text-xs text-gray-400 italic border-t pt-4">
+              We reserve the right to update these terms. Changes will be posted on this page.
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+const ShippingDetailsPage = ({ onNavigate }) => {
+  return (
+    <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => onNavigate('storefront')}
+          style={{ color: colors.gold }}
+          className="mb-6 flex items-center gap-2 font-semibold hover:opacity-80 transition"
+        >
+          ← Back to Shop
+        </button>
+
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Header */}
+          <div style={{ backgroundColor: colors.darkPlum }} className="px-8 py-6 text-white">
+            <h2 className="text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Shipping Information
+            </h2>
+            <p className="opacity-80 text-sm mt-1">
+              Fast, reliable delivery to your doorstep – crafted with care.
+            </p>
+          </div>
+
+          <div className="p-8 space-y-6 text-gray-700">
+            {/* Delivery Options */}
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🚚</span> Delivery Options
+              </h3>
+              <div className="mt-3 space-y-3">
+                <div
+                  style={{
+                    backgroundColor: colors.champagne,
+                    borderLeft: `4px solid ${colors.gold}`,
+                  }}
+                  className="p-4 rounded-lg"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">Standard Delivery</p>
+                      <p className="text-sm text-gray-600">5–7 business days</p>
+                    </div>
+                    <span className="font-bold text-green-600">Free</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Reliable delivery with tracking</p>
+                </div>
+
+                <div
+                  style={{
+                    backgroundColor: colors.champagne,
+                    borderLeft: `4px solid ${colors.gold}`,
+                  }}
+                  className="p-4 rounded-lg"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">Express Delivery</p>
+                      <p className="text-sm text-gray-600">2–3 business days</p>
+                    </div>
+                    <span className="font-bold" style={{ color: colors.gold }}>$25.00</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Priority handling with real‑time tracking</p>
+                </div>
+
+                <div
+                  style={{
+                    backgroundColor: colors.champagne,
+                    borderLeft: `4px solid ${colors.gold}`,
+                  }}
+                  className="p-4 rounded-lg"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">White Glove Delivery</p>
+                      <p className="text-sm text-gray-600">Next day delivery</p>
+                    </div>
+                    <span className="font-bold" style={{ color: colors.gold }}>$85.00</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Premium white‑glove service with personalised care and setup
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tracking */}
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>📍</span> Order Tracking
+              </h3>
+              <p className="text-sm mt-1">
+                Once your order is dispatched, you will receive a <strong>tracking link</strong> via email.
+                You can monitor your delivery in real time and receive estimated arrival updates.
+              </p>
+            </div>
+
+            {/* Delivery Area */}
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🌍</span> Delivery Area
+              </h3>
+              <p className="text-sm mt-1">
+                We currently deliver across <strong>all regions of Sri Lanka</strong>.
+                For orders outside our regular delivery zones, please <button
+                  onClick={() => onNavigate('contact')}
+                  style={{ color: colors.gold }}
+                  className="font-semibold hover:underline"
+                >
+                  contact us
+                </button> and we’ll do our best to accommodate.
+              </p>
+            </div>
+
+            {/* Packaging */}
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>📦</span> Packaging & Freshness
+              </h3>
+              <p className="text-sm mt-1">
+                Every order is carefully packed to preserve freshness and presentation.
+                We use premium, food‑grade packaging that keeps your treats safe and beautiful
+                during transit.
+              </p>
+            </div>
+
+            {/* Delivery Hours */}
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🕐</span> Delivery Hours
+              </h3>
+              <p className="text-sm mt-1">
+                Deliveries are made <strong>Monday – Saturday</strong> between 8:00 AM and 8:00 PM.
+                Sunday deliveries are available on request for special occasions.
+              </p>
+            </div>
+
+            {/* Shop Address */}
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span style={{ color: colors.gold }}>🏪</span> Visit Our Shop
+              </h3>
+              <div style={{ backgroundColor: colors.champagne }} className="p-4 rounded-lg text-sm">
+                <p><strong>Address:</strong> Nagapossani Amman Lane, Kondavil East, Kondavil</p>
+                <p className="mt-1"><strong>Phone:</strong> <a href="tel:0769248360" style={{ color: colors.gold }}>076 924 8360</a></p>
+                <p><strong>Hours:</strong> Monday – Saturday, 8:00 AM – 8:00 PM</p>
+                <p className="text-gray-500 text-xs mt-1">Sunday – Closed</p>
+              </div>
+            </div>
+
+            {/* Bottom CTA */}
+            <div style={{ borderTop: `1px solid ${colors.lightGray}` }} className="pt-6 text-center">
+              <p className="text-sm">
+                Need help with your delivery?{' '}
+                <button
+                  onClick={() => onNavigate('contact')}
+                  style={{ color: colors.gold }}
+                  className="font-semibold hover:underline"
+                >
+                  Contact our support team
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
 
 const BestSellersPage = ({ onNavigate }) => (
   <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
@@ -93,13 +620,120 @@ const BestSellersPage = ({ onNavigate }) => (
 
 const ContactPage = ({ onNavigate }) => (
   <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
-    <div className="max-w-2xl mx-auto">
-      <button onClick={() => onNavigate('storefront')} style={{ color: colors.gold }} className="mb-6 flex items-center gap-2 font-semibold">← Back to Shop</button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <h2 className="text-3xl font-bold mb-4">Contact Us</h2>
-        <p>Email: hello@cakesnsnacks.com</p>
-        <p>Phone: +1 (555) 123-4567</p>
-        <p>Address: 123 Elegance Avenue, San Francisco, CA</p>
+    <div className="max-w-4xl mx-auto">
+      <button
+        onClick={() => onNavigate('storefront')}
+        style={{ color: colors.gold }}
+        className="mb-6 flex items-center gap-2 font-semibold hover:opacity-80 transition"
+      >
+        ← Back to Shop
+      </button>
+
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Header with gold accent */}
+        <div
+          style={{ backgroundColor: colors.darkPlum }}
+          className="px-8 py-6 text-white"
+        >
+          <h2 className="text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Get in Touch
+          </h2>
+          <p className="opacity-80 text-sm mt-1">
+            We’d love to hear from you – drop us a message or visit our bakery.
+          </p>
+        </div>
+
+        <div className="p-8 grid md:grid-cols-2 gap-8">
+          {/* Left column: Contact details */}
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-sm uppercase font-semibold text-gray-400 tracking-wider">Reach us</h4>
+              <div className="mt-4 space-y-4 text-gray-700">
+                <div className="flex items-start gap-3">
+                  <span style={{ fontSize: '20px' }}>📍</span>
+                  <div>
+                    <p className="font-semibold">Visit Our Bakery</p>
+                    <p className="text-sm text-gray-600">
+                      Nagapossani Amman Lane,<br />
+                      Kondavil East, Kondavil
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span style={{ fontSize: '20px' }}>📞</span>
+                  <div>
+                    <p className="font-semibold">Call Us</p>
+                    <a href="tel:0769248360" className="text-sm text-gray-600 hover:text-gold transition">
+                      076 924 8360
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span style={{ fontSize: '20px' }}>✉️</span>
+                  <div>
+                    <p className="font-semibold">Email</p>
+                    <a href="mailto:info@cakesandsnacks.com" className="text-sm text-gray-600 hover:text-gold transition">
+                      info@cakesandsnacks.com
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{ backgroundColor: colors.champagne }}
+              className="p-4 rounded-lg"
+            >
+              <h4 className="text-sm uppercase font-semibold text-gray-500 tracking-wider">Hours</h4>
+              <div className="mt-2 text-sm text-gray-700 space-y-1">
+                <p><span className="font-medium">Mon – Sat:</span> 8:00 AM – 8:00 PM</p>
+                <p><span className="font-medium">Sunday:</span> Closed</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right column: Brand story & CTA */}
+          <div className="space-y-4">
+            <h4 className="text-sm uppercase font-semibold text-gray-400 tracking-wider">Our Promise</h4>
+            <p className="text-gray-700 leading-relaxed">
+              Every cake, every pastry, every bite is made with love and the finest ingredients.
+              We believe in creating moments of joy – whether it’s a celebration, a quiet treat,
+              or a shared memory.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Have a special request or custom order? We’d be delighted to bring your vision to life.
+            </p>
+            <div className="pt-4">
+              <button
+                onClick={() => onNavigate('storefront')}
+                style={{ backgroundColor: colors.gold }}
+                className="px-6 py-2 font-semibold text-black rounded-lg hover:shadow-lg transition"
+              >
+                Explore Our Collection
+              </button>
+            </div>
+            <div className="flex gap-4 mt-2">
+              <a
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: colors.darkPlum }}
+                className="text-2xl hover:opacity-70 transition"
+              >
+                📘
+              </a>
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: colors.darkPlum }}
+                className="text-2xl hover:opacity-70 transition"
+              >
+                📸
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -227,6 +861,7 @@ const AboutPage = ({ onNavigate }) => (
     </div>
   </main>
 );
+
 
 // ------------------------------------------------------------------
 // Main App Component
