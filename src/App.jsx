@@ -16,6 +16,7 @@ import PersonalInfoPage from './pages/PersonalInfoPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 
 // Components
 import Header from './components/Header';
@@ -108,11 +109,120 @@ const ContactPage = ({ onNavigate }) => (
 const AboutPage = ({ onNavigate }) => (
   <main style={{ backgroundColor: colors.softCream, minHeight: '100vh' }} className="py-12 px-6">
     <div className="max-w-4xl mx-auto">
-      <button onClick={() => onNavigate('storefront')} style={{ color: colors.gold }} className="mb-6 flex items-center gap-2 font-semibold">← Back to Shop</button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <h2 className="text-3xl font-bold mb-4">About Cakes & Snacks</h2>
-        <p className="mb-4">We are a premium artisanal bakery, crafting exquisite pastries, cakes, and confections with love and the finest ingredients.</p>
-        <p>Our journey began in a small kitchen, and today we serve customers worldwide with our signature creations.</p>
+      <button 
+        onClick={() => onNavigate('storefront')} 
+        style={{ color: colors.gold }} 
+        className="mb-6 flex items-center gap-2 font-semibold hover:opacity-80 transition"
+      >
+        ← Back to Shop
+      </button>
+      
+      <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg">
+        <div className="text-center mb-8">
+          <div style={{ fontSize: '64px' }} className="mb-4">🧁</div>
+          <h2 
+            className="text-4xl font-bold mb-2" 
+            style={{ fontFamily: 'Playfair Display, serif', color: colors.darkPlum }}
+          >
+            About Cakes & Snacks
+          </h2>
+          <div 
+            style={{ backgroundColor: colors.gold, width: '80px', height: '3px' }} 
+            className="mx-auto rounded"
+          />
+        </div>
+
+        <div className="space-y-6 text-gray-700 leading-relaxed">
+          <p className="text-lg">
+            Welcome to <strong style={{ color: colors.darkPlum }}>Cakes & Snacks</strong> – where every bite tells a story of passion, 
+            tradition, and the finest craftsmanship. 
+          </p>
+
+          <p>
+            Our journey began in a small kitchen in <strong>Kondavil</strong>, driven by a simple belief: that 
+            extraordinary treats start with extraordinary ingredients. Today, we are proud to be a 
+            beloved name in Jaffna and beyond, crafting cakes and snacks that bring joy to every occasion.
+          </p>
+
+          <div 
+            style={{ 
+              backgroundColor: colors.champagne, 
+              padding: '24px', 
+              borderRadius: '12px',
+              borderLeft: `4px solid ${colors.gold}`
+            }}
+            className="my-6"
+          >
+            <h4 className="font-semibold text-lg mb-2" style={{ color: colors.darkPlum }}>
+              Meet Our Founder
+            </h4>
+            <p className="text-gray-700">
+              Our shop is lovingly run by <strong>Kashthury Tharsan</strong>, whose dedication to quality 
+              and creativity has made Cakes & Snacks a destination for those who appreciate the art of 
+              fine baking. From classic butter cakes to innovative seasonal creations, every product 
+              reflects her commitment to excellence.
+            </p>
+          </div>
+
+          <p>
+            Nestled at <strong>Nagapossani Amman Lane, Kondavil East</strong>, our cozy bakery is a place 
+            where the aroma of freshly baked goods welcomes you like an old friend. Whether you're 
+            craving a decadent cake for a celebration or a quick snack to brighten your day, we're here 
+            to make every moment special.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-4 my-6">
+            <div 
+              style={{ backgroundColor: colors.champagne }} 
+              className="p-4 rounded-lg text-center"
+            >
+              <div className="text-3xl mb-2">🎂</div>
+              <h5 className="font-semibold" style={{ color: colors.darkPlum }}>Premium Cakes</h5>
+              <p className="text-sm text-gray-600">Signature & custom creations</p>
+            </div>
+            <div 
+              style={{ backgroundColor: colors.champagne }} 
+              className="p-4 rounded-lg text-center"
+            >
+              <div className="text-3xl mb-2">🍪</div>
+              <h5 className="font-semibold" style={{ color: colors.darkPlum }}>Artisanal Snacks</h5>
+              <p className="text-sm text-gray-600">Freshly baked daily</p>
+            </div>
+            <div 
+              style={{ backgroundColor: colors.champagne }} 
+              className="p-4 rounded-lg text-center"
+            >
+              <div className="text-3xl mb-2">❤️</div>
+              <h5 className="font-semibold" style={{ color: colors.darkPlum }}>Made with Love</h5>
+              <p className="text-sm text-gray-600">Family recipes & traditions</p>
+            </div>
+          </div>
+
+          <div 
+            style={{ 
+              backgroundColor: colors.darkPlum, 
+              color: 'white', 
+              padding: '24px', 
+              borderRadius: '12px' 
+            }}
+            className="text-center"
+          >
+            <h4 className="font-semibold text-lg mb-3">Visit Our Shop</h4>
+            <p className="text-sm opacity-90">
+              📍 Nagapossani Amman Lane, Kondavil East, Kondavil
+            </p>
+            <p className="text-sm opacity-90 mt-1">
+              📞 <a href="tel:0769248360" style={{ color: colors.gold }}>076 924 8360</a>
+            </p>
+            <p className="text-xs opacity-70 mt-3">
+              Open Monday – Saturday · 8:00 AM – 8:00 PM
+            </p>
+          </div>
+
+          <p className="text-center text-sm text-gray-500 italic mt-4">
+            "Every cake tells a story, and every snack is a memory in the making."
+          </p>
+        </div>
       </div>
     </div>
   </main>
@@ -171,6 +281,7 @@ const App = () => {
       shipping: <ShippingDetailsPage onNavigate={handleNavigate} />,
       'best-sellers': <BestSellersPage onNavigate={handleNavigate} />,
       contact: <ContactPage onNavigate={handleNavigate} />,
+      'order-detail': <OrderDetailPage onNavigate={handleNavigate} />,
     };
 
     // Manager-only pages (protected)
