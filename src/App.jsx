@@ -16,6 +16,7 @@ import PersonalInfoPage from './pages/PersonalInfoPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 
 // Components
 import Header from './components/Header';
@@ -280,6 +281,7 @@ const App = () => {
       shipping: <ShippingDetailsPage onNavigate={handleNavigate} />,
       'best-sellers': <BestSellersPage onNavigate={handleNavigate} />,
       contact: <ContactPage onNavigate={handleNavigate} />,
+      'order-detail': <OrderDetailPage onNavigate={handleNavigate} />,
     };
 
     // Manager-only pages (protected)

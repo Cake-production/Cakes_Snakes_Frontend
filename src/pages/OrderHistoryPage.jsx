@@ -151,12 +151,16 @@ const OrderHistoryPage = ({ onNavigate }) => {
                   >
                     <span className="font-bold">${total.toFixed(2)}</span>
                     <button
-                      onClick={() => onNavigate(`/order/${order.id}`)}
-                      style={{ color: colors.gold }}
-                      className="font-semibold hover:opacity-80"
-                    >
-                      View Details →
-                    </button>
+                    onClick={() => {
+                      // Pass order ID via state
+                      window.history.pushState({ orderId: order.id }, '', `/order/${order.id}`);
+                      onNavigate('order-detail');
+                    }}
+                    style={{ color: colors.gold }}
+                    className="font-semibold hover:opacity-80"
+                  >
+                    View Details →
+                  </button>
                   </div>
                 </div>
               );
